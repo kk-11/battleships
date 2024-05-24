@@ -1,0 +1,19 @@
+{
+    "name": "battleships",
+    "type": "module",
+    "jest": {
+        "transform": {
+            ".js": "babel-jest"
+        }
+    },
+    "scripts": {
+        "test": "jest --coverage"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0"
+    },
+    "dependencies": {
+        "@babel/preset-env": "^7.24.5",
+        "babel-jest": "^29.7.0"
+    }
+}
