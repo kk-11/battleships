@@ -1,22 +1,13 @@
 import {
     GRID_SIZE,
-    grid,
-    placeShips,
-    canPlaceShip,
     allShipsSunk,
+    canPlaceShip,
+    grid,
     parseCoordinates,
+    placeShips,
     playTurn,
     rl,
 } from "./main.js";
-
-jest.mock("readline", () => ({
-    createInterface: jest.fn().mockReturnValue({
-        question: jest
-            .fn()
-            .mockImplementationOnce((question, cb) => cb("InvalidInput")),
-        close: jest.fn(),
-    }),
-}));
 
 describe("Battleships Game", () => {
     beforeEach(() => {
@@ -60,7 +51,6 @@ describe("Battleships Game", () => {
             }
             expect(allShipsSunk()).toBe(true);
         });
-
         it("should not detect game over if ships remain", () => {
             placeShips();
             expect(allShipsSunk()).toBe(false);
@@ -72,73 +62,51 @@ describe("Battleships Game", () => {
             const result = parseCoordinates("A1");
             expect(result).toEqual({ row: 0, col: 0 });
         });
-
         it("should throw an error for invalid coordinates", () => {
             expect(() => parseCoordinates("Z9")).toThrow("Invalid coordinates");
         });
     });
-});
 
+    describe("Play Turn", () => {
+        it("handles invalid input gracefully", () => {
+            const mockQuestion = jest
+                .fn()
+                .mockImplementationOnce((_, cb) => cb("InvalidInput"));
+            rl.question = mockQuestion;
 
+            jest.spyOn(global.console, "log").mockImplementation(() => {});
+            jest.spyOn(global.console, "error").mockImplementation(() => {});
+            jest.spyOn(global.console, "error").mockImplementationOnce(
+                () => "Invalid coordinates"
+            );
+            playTurn();
+            expect(console.error).toHaveBeenCalledWith("Invalid coordinates");
+        });
 
-test("playTurn handles invalid input gracefully", () => {
-    const mockQuestion = jest
-        .fn()
-        .mockImplementationOnce((question, cb) => cb("InvalidInput"));
-    rl.question = mockQuestion;
+        it("logs message when targeting an already marked position", () => {
+            grid[0][0] = "M";
 
-    jest.spyOn(global.console, "log").mockImplementation(() => {}); 
-    jest.spyOn(global.console, "error").mockImplementation(() => {});
-    jest.spyOn(global.console, "error").mockImplementationOnce(() => {
-        return "Invalid coordinates";
+            jest.spyOn(global.console, "log").mockImplementation(() => {});
+            const mockQuestion = jest
+                .fn()
+                .mockImplementationOnce((_, cb) => cb("A1"));
+            rl.question = mockQuestion;
+            playTurn();
+            expect(console.log).toHaveBeenCalledWith(
+                "Already targeted. Try again."
+            );
+        });
+
+        it("logs message when a hit is registered", () => {
+            grid[0][0] = "S";
+
+            jest.spyOn(global.console, "log").mockImplementation(() => {});
+            const mockQuestion = jest
+                .fn()
+                .mockImplementationOnce((_, cb) => cb("A1"));
+            rl.question = mockQuestion;
+            playTurn();
+            expect(console.log).toHaveBeenCalledWith("Hit!");
+        });
     });
-    playTurn();
-    expect(console.error).toHaveBeenCalledWith("Invalid coordinates");
-});
-// test("playTurn logs congratulations message when all ships are sunk", () => {
-//     jest.spyOn(global.console, "log").mockImplementation(() => {});
-//     const mockQuestion = jest
-//         .fn()
-//         .mockImplementationOnce((question, cb) => cb("A1"));
-//     rl.question = mockQuestion;
-
-//     jest.spyOn(global.console, "log").mockImplementationOnce(() => {});
-//     jest.spyOn(global.console, "log").mockImplementationOnce(() => {});
-//     jest.spyOn(global.console, "log").mockImplementationOnce(() => {});
-//     jest.spyOn(global.console, "log").mockImplementationOnce(() => {});
-//     jest.spyOn(global.console, "log").mockImplementationOnce(() => {});
-//     jest.spyOn(global.console, "log").mockImplementationOnce(() => {});
-//     jest.spyOn(global.console, "log").mockImplementationOnce(() => {});
-
-//     playTurn();
-
-//     expect(console.log).toHaveBeenCalledWith(
-//         "Congratulations! You have sunk all the ships."
-//     );
-// });
-
-test("playTurn logs message when targeting an already marked position", () => {
-    grid[0][0] = "M";
-
-    jest.spyOn(global.console, "log").mockImplementation(() => {});
-    const mockQuestion = jest
-        .fn()
-        .mockImplementationOnce((question, cb) => cb("A1"));
-    rl.question = mockQuestion;
-
-    playTurn();
-    expect(console.log).toHaveBeenCalledWith("Already targeted. Try again.");
-});
-
-test("playTurn logs message when a hit is registered", () => {
-    grid[0][0] = "S";
-
-    jest.spyOn(global.console, "log").mockImplementation(() => {});
-    const mockQuestion = jest
-        .fn()
-        .mockImplementationOnce((question, cb) => cb("A1"));
-    rl.question = mockQuestion;
-
-    playTurn();
-    expect(console.log).toHaveBeenCalledWith("Hit!");
 });
