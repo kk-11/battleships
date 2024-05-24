@@ -9,7 +9,7 @@ import {
     rl,
 } from "./main.js";
 
-describe("Battleships Game", () => {
+describe("Test Suite: Battleships", () => {
     beforeEach(() => {
         for (let row = 0; row < GRID_SIZE; row++) {
             for (let col = 0; col < GRID_SIZE; col++) {
@@ -18,7 +18,7 @@ describe("Battleships Game", () => {
         }
     });
 
-    describe("Ship Placement", () => {
+    describe("===  Ship Placement  ===", () => {
         it("should place ships without overlapping", () => {
             placeShips();
             let shipCount = 0;
@@ -41,7 +41,7 @@ describe("Battleships Game", () => {
         });
     });
 
-    describe("Hit Detection", () => {
+    describe("=== Hit Detection ===", () => {
         it("should detect game over when all ships are sunk", () => {
             placeShips();
             for (let row = 0; row < GRID_SIZE; row++) {
@@ -51,13 +51,14 @@ describe("Battleships Game", () => {
             }
             expect(allShipsSunk()).toBe(true);
         });
+
         it("should not detect game over if ships remain", () => {
             placeShips();
             expect(allShipsSunk()).toBe(false);
         });
     });
 
-    describe("Coordinate Parsing", () => {
+    describe("=== Coordinate Parsing ===", () => {
         it("should parse valid coordinates", () => {
             const result = parseCoordinates("A1");
             expect(result).toEqual({ row: 0, col: 0 });
@@ -67,7 +68,7 @@ describe("Battleships Game", () => {
         });
     });
 
-    describe("Play Turn", () => {
+    describe("=== Play Turn ===", () => {
         it("handles invalid input gracefully", () => {
             const mockQuestion = jest
                 .fn()
@@ -107,6 +108,17 @@ describe("Battleships Game", () => {
             rl.question = mockQuestion;
             playTurn();
             expect(console.log).toHaveBeenCalledWith("Hit!");
+        });
+
+        it("logs message when a miss is registered", () => {
+            grid[0][0] = " "; 
+            jest.spyOn(global.console, "log").mockImplementation(() => {});
+            const mockQuestion = jest
+                .fn()
+                .mockImplementationOnce((_, cb) => cb("A1"));
+            rl.question = mockQuestion;
+            playTurn();
+            expect(console.log).toHaveBeenCalledWith("Miss.");
         });
     });
 });
