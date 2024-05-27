@@ -57,4 +57,4 @@ This was a fun challenge. I very much appreciate a unique coding challenge that 
 
 Looking forward to chatting about tech.
 
-Thanks :)
+Thanks.
