@@ -21,7 +21,7 @@ describe("Test Suite: Battleships", () => {
         jest.spyOn(global.console, "log").mockImplementation(() => {});
     });
 
-    describe("===  Ship Placement ===", () => {
+    describe("=== Ship Placement ===", () => {
         it("should place ships without overlapping", () => {
             placeShips();
             let shipSectionCount = 0;
