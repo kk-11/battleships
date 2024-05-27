@@ -1,37 +1,48 @@
 import {
     GRID_SIZE,
+    grid,
+    rl,
     allShipsSunk,
     canPlaceShip,
-    grid,
     parseCoordinates,
     placeShips,
     playTurn,
-    rl,
 } from "./main.js";
 
 describe("Test Suite: Battleships", () => {
+    let mockQuestion;
     beforeEach(() => {
         for (let row = 0; row < GRID_SIZE; row++) {
             for (let col = 0; col < GRID_SIZE; col++) {
                 grid[row][col] = " ";
             }
         }
+        mockQuestion = jest.fn().mockImplementationOnce((_, cb) => cb("A1"));
+        jest.spyOn(global.console, "log").mockImplementation(() => {});
     });
 
-    describe("===  Ship Placement  ===", () => {
+    describe("===  Ship Placement ===", () => {
         it("should place ships without overlapping", () => {
             placeShips();
-            let shipCount = 0;
+            let shipSectionCount = 0;
             for (let row = 0; row < GRID_SIZE; row++) {
                 for (let col = 0; col < GRID_SIZE; col++) {
-                    if (grid[row][col] === "S") shipCount++;
+                    if (grid[row][col] === "S") shipSectionCount++;
                 }
             }
-            expect(shipCount).toBe(1 * 5 + 2 * 4);
+            const staticShips = 1 * 5 + 2 * 4;
+            expect(shipSectionCount).toBe(staticShips);
+        });
+        it("should not allow placing a ship on another ship", () => {
+            grid[0][0] = "S";
+            const horizontal = canPlaceShip(0, 0, 1, true);
+            const vertical = canPlaceShip(0, 0, 1, false);
+            expect(horizontal).toBe(false);
+            expect(vertical).toBe(false);
         });
 
         it("should not allow placing ships out of bounds", () => {
-            const result = canPlaceShip(0, GRID_SIZE - 1, 5, true);
+            const result = canPlaceShip(0, -1, 1, true);
             expect(result).toBe(false);
         });
 
@@ -52,19 +63,25 @@ describe("Test Suite: Battleships", () => {
             expect(allShipsSunk()).toBe(true);
         });
 
-        it("should not detect game over if ships remain", () => {
+        it("should continue game if there are still ships on the board", () => {
             placeShips();
+            rl.question = mockQuestion;
+            playTurn();
             expect(allShipsSunk()).toBe(false);
         });
     });
 
     describe("=== Coordinate Parsing ===", () => {
         it("should parse valid coordinates", () => {
-            const result = parseCoordinates("A1");
-            expect(result).toEqual({ row: 0, col: 0 });
+            const firstSquare = parseCoordinates("A1");
+            expect(firstSquare).toEqual({ row: 0, col: 0 });
+            const lastSquare = parseCoordinates("J10");
+            expect(lastSquare).toEqual({ row: 9, col: 9 });
         });
         it("should throw an error for invalid coordinates", () => {
-            expect(() => parseCoordinates("Z9")).toThrow("Invalid coordinates");
+            expect(() => parseCoordinates("Z100")).toThrow(
+                "Invalid coordinates"
+            );
         });
     });
 
@@ -74,9 +91,6 @@ describe("Test Suite: Battleships", () => {
                 .fn()
                 .mockImplementationOnce((_, cb) => cb("InvalidInput"));
             rl.question = mockQuestion;
-
-            jest.spyOn(global.console, "log").mockImplementation(() => {});
-            jest.spyOn(global.console, "error").mockImplementation(() => {});
             jest.spyOn(global.console, "error").mockImplementationOnce(
                 () => "Invalid coordinates"
             );
@@ -86,11 +100,6 @@ describe("Test Suite: Battleships", () => {
 
         it("logs message when targeting an already marked position", () => {
             grid[0][0] = "M";
-
-            jest.spyOn(global.console, "log").mockImplementation(() => {});
-            const mockQuestion = jest
-                .fn()
-                .mockImplementationOnce((_, cb) => cb("A1"));
             rl.question = mockQuestion;
             playTurn();
             expect(console.log).toHaveBeenCalledWith(
@@ -100,22 +109,13 @@ describe("Test Suite: Battleships", () => {
 
         it("logs message when a hit is registered", () => {
             grid[0][0] = "S";
-
-            jest.spyOn(global.console, "log").mockImplementation(() => {});
-            const mockQuestion = jest
-                .fn()
-                .mockImplementationOnce((_, cb) => cb("A1"));
             rl.question = mockQuestion;
             playTurn();
             expect(console.log).toHaveBeenCalledWith("Hit!");
         });
 
         it("logs message when a miss is registered", () => {
-            grid[0][0] = " "; 
-            jest.spyOn(global.console, "log").mockImplementation(() => {});
-            const mockQuestion = jest
-                .fn()
-                .mockImplementationOnce((_, cb) => cb("A1"));
+            grid[0][0] = " ";
             rl.question = mockQuestion;
             playTurn();
             expect(console.log).toHaveBeenCalledWith("Miss.");

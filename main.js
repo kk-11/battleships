@@ -1,5 +1,6 @@
 import readline from "readline";
-let shots = 0;
+
+let shotsFired = 0;
 const GRID_SIZE = 10;
 const rl = readline.createInterface({
     input: process.stdin,
@@ -44,6 +45,7 @@ function placeShip(size) {
 }
 
 function canPlaceShip(row, col, size, isHorizontal) {
+    if (row < 0 || col < 0) return false;
     if (isHorizontal) {
         if (col + size > GRID_SIZE) return false;
         for (let i = 0; i < size; i++) {
@@ -98,11 +100,11 @@ function playTurn() {
             if (grid[row][col] === "S") {
                 grid[row][col] = "H";
                 console.log("Hit!");
-                shots++;
+                shotsFired++;
             } else if (grid[row][col] === " " || grid[row][col] === "●") {
                 grid[row][col] = "M";
                 console.log("Miss.");
-                shots++;
+                shotsFired++;
             } else {
                 console.log("Already targeted. Try again.");
             }
@@ -111,7 +113,7 @@ function playTurn() {
 
             if (allShipsSunk()) {
                 console.log(
-                    `Congratulations! You sagstnk all the ships in ${shots} shots`
+                    `Congratulations! You sank all the ships in ${shotsFired} shots`
                 );
                 rl.close();
             } else {
@@ -135,11 +137,11 @@ main();
 export {
     GRID_SIZE,
     grid,
-    placeShips,
-    placeShip,
-    canPlaceShip,
-    allShipsSunk,
-    parseCoordinates,
-    playTurn,
     rl,
+    allShipsSunk,
+    canPlaceShip,
+    ships,
+    parseCoordinates,
+    placeShips,
+    playTurn,
 };
